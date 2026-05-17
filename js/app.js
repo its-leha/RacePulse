@@ -13,10 +13,16 @@ const TIRE = {
 
 // ── API ────────────────────────────────────────────────────────────────────
 
-async function get(path) {
-    const r = await fetch(API + path);
-    if (!r.ok) throw new Error(`${r.status} ${path}`);
-    return r.json();
+async function get(path, fallback = []) {
+    try {
+        const r = await fetch(API + path);
+        if (r.status === 429) { console.warn('Rate limited:', path); return fallback; }
+        if (!r.ok) throw new Error(`${r.status} ${path}`);
+        return r.json();
+    } catch (e) {
+        console.warn('Fetch failed:', path, e.message);
+        return fallback;
+    }
 }
 
 // ── Lap cache (incremental fetch to avoid re-loading thousands of rows) ───
@@ -354,5 +360,5 @@ async function refresh() {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('refresh-btn').addEventListener('click', refresh);
     refresh();
-    setInterval(refresh, 10_000);
+    setInterval(refresh, 30_000);
 });
