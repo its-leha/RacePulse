@@ -1,6 +1,6 @@
 'use strict';
 
-const API = 'https://api.openf1.org/v1';
+const API = 'https://gentle-fire-7fad.hi-itsleha.workers.dev/v1';
 
 const TIRE = {
     SOFT:         { color: '#e8002d', abbr: 'S' },
