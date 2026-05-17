@@ -216,12 +216,42 @@ html, body {
 }
 
 .last-sectors {
+    display: flex;
+    gap: 4px;
+}
+
+.sec {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 36px;
+}
+
+.sec-bar {
+    width: 100%;
+    height: 2px;
+    border-radius: 1px;
+}
+
+.sec-val {
     font-family: 'Courier New', Courier, monospace;
     font-size: 9px;
-    color: var(--text-dim);
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
 }
+
+/* Sector color states */
+.sec.purple .sec-bar  { background: #a855f7; }
+.sec.purple .sec-val  { color: #c084fc; }
+
+.sec.green  .sec-bar  { background: #16a34a; }
+.sec.green  .sec-val  { color: #4ade80; }
+
+.sec.yellow .sec-bar  { background: #a16207; }
+.sec.yellow .sec-val  { color: #fbbf24; }
+
+.sec.none   .sec-bar  { background: #252525; }
+.sec.none   .sec-val  { color: #383838; }
 
 .col-best {
     font-family: 'Courier New', Courier, monospace;
