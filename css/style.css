@@ -1,0 +1,378 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:         #0d0d0d;
+    --panel:      #111111;
+    --border:     #1e1e1e;
+    --border2:    #252525;
+    --text:       #b0b0b0;
+    --text-dim:   #484848;
+    --text-hi:    #e0e0e0;
+    --fastest:    #a855f7;
+    --hdr-h:      44px;
+    --wx-h:       30px;
+}
+
+html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    overflow: hidden;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* ── Header ────────────────────────────────── */
+#header {
+    height: var(--hdr-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+#session-info { display: flex; align-items: baseline; gap: 10px; }
+
+#session-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-hi);
+    letter-spacing: 0.02em;
+}
+
+#session-type {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+#lap-info {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+}
+
+#lap-info span { color: var(--text); font-weight: 600; }
+
+#controls { display: flex; align-items: center; gap: 8px; }
+
+#status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-idle    { background: #333; }
+.dot-loading { background: #ca8a04; }
+.dot-ok      { background: #16a34a; }
+.dot-error   { background: #dc2626; }
+
+#refresh-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    width: 26px;
+    height: 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: color 0.12s;
+}
+
+#refresh-btn:hover { color: var(--text); }
+
+/* ── Weather ───────────────────────────────── */
+#weather-bar {
+    height: var(--wx-h);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+#weather-bar strong { color: var(--text); font-weight: 600; }
+
+#last-update-label { margin-left: auto; font-size: 10px; color: #303030; }
+
+/* ── Content ───────────────────────────────── */
+#content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ── Timing section ────────────────────────── */
+#timing-section {
+    flex: 5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+    border-right: 1px solid var(--border);
+}
+
+/* Column grid: pos driver status gap int last best tyre */
+.tower-row {
+    display: grid;
+    grid-template-columns: 34px 1fr 88px 76px 76px 100px 100px 68px;
+    align-items: center;
+    padding: 0 12px;
+    column-gap: 4px;
+}
+
+.tower-head {
+    height: 28px;
+    background: #0e0e0e;
+    border-bottom: 1px solid var(--border);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    flex-shrink: 0;
+}
+
+#timing-tower {
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* ── Driver row ────────────────────────────── */
+.driver-row {
+    height: 38px;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+}
+
+.driver-row:hover { background: #151515; }
+.row-out { opacity: 0.4; }
+
+.col-pos {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+.col-driver { display: flex; align-items: center; gap: 6px; }
+
+.drv-abbr {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+.drv-num { font-size: 10px; color: var(--text-dim); }
+
+/* Status badge */
+.s-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 2px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.s-track { background: #0b1f13; color: #4ade80; }
+.s-pit   { background: #1f1709; color: #fbbf24; }
+.s-out   { background: #1a0a0a; color: #f87171; }
+
+.col-gap,
+.col-int {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+.col-last,
+.col-best {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.col-best.fastest { color: var(--fastest); font-weight: 700; }
+
+.col-tyre { display: flex; align-items: center; gap: 5px; }
+
+.tyre-dot {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    color: #0d0d0d;
+    flex-shrink: 0;
+}
+
+.tyre-laps { font-size: 10px; color: var(--text-dim); }
+
+/* ── Side panel ────────────────────────────── */
+#side-panel {
+    flex: 3;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+}
+
+#rc-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    min-height: 0;
+}
+
+#stints-panel {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.panel-title {
+    height: 28px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: #0e0e0e;
+    border-bottom: 1px solid var(--border);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    flex-shrink: 0;
+}
+
+#rc-list { flex: 1; overflow-y: auto; }
+
+.rc-msg {
+    display: grid;
+    grid-template-columns: 44px 20px 1fr;
+    align-items: start;
+    gap: 6px;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.rc-lap { font-size: 9px; color: var(--text-dim); padding-top: 1px; white-space: nowrap; }
+
+.rc-icon { font-size: 9px; font-weight: 700; padding-top: 1px; }
+.rc-red    { color: #ef4444; }
+.rc-yellow { color: #fbbf24; }
+.rc-green  { color: #4ade80; }
+.rc-sc     { color: #fbbf24; }
+.rc-drs    { color: #60a5fa; }
+.rc-info   { color: var(--text-dim); }
+
+.rc-text { color: var(--text); line-height: 1.4; }
+
+/* ── Stints ────────────────────────────────── */
+#stints-list { flex: 1; overflow-y: auto; }
+
+.driver-stints {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.stints-drv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-left: 8px;
+    border-left: 3px solid transparent;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.stints-total { font-size: 10px; color: var(--text-dim); font-weight: 400; }
+
+.stint-head,
+.stint-row {
+    display: grid;
+    grid-template-columns: 26px 46px 54px 1fr;
+    gap: 8px;
+    font-size: 10px;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.stint-head { color: var(--text-dim); margin-bottom: 2px; }
+
+.stint-row { color: var(--text); }
+
+.stint-best { font-family: 'Courier New', monospace; }
+
+/* ── Misc ──────────────────────────────────── */
+.info-msg {
+    padding: 20px 16px;
+    color: var(--text-dim);
+    font-size: 12px;
+    text-align: center;
+}
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #333; }
+
+/* ── Mobile ────────────────────────────────── */
+@media (max-width: 680px) {
+    html, body { overflow: auto; }
+
+    #app { height: auto; min-height: 100vh; }
+
+    #content { flex-direction: column; overflow: visible; }
+
+    #timing-section {
+        overflow: visible;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    #timing-tower { overflow: visible; }
+
+    #side-panel {
+        max-width: none;
+        overflow: visible;
+    }
+
+    #rc-panel, #stints-panel { overflow: visible; }
+    #rc-list, #stints-list   { overflow: visible; }
+
+    .col-int { display: none; }
+
+    .tower-row {
+        grid-template-columns: 30px 1fr 80px 68px 92px 92px 60px;
+        padding: 0 8px;
+    }
+}
