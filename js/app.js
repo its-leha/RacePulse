@@ -23,7 +23,8 @@ async function get(path, fallback = []) {
         clearTimeout(timer);
         if (r.status === 429) { console.warn('Rate limited:', path); return fallback; }
         if (!r.ok) throw new Error(r.status);
-        return r.json();
+        const data = await r.json();
+        return Array.isArray(data) ? data : fallback;
     } catch (e) {
         clearTimeout(timer);
         if (e.name !== 'AbortError') console.warn('Fetch failed:', path, e.message);
