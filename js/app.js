@@ -11,16 +11,22 @@ const TIRE = {
     UNKNOWN:      { color: '#555555', abbr: '?' }
 };
 
+const FETCH_TIMEOUT = 8_000;
+
 // ── API ────────────────────────────────────────────────────────────────────
 
 async function get(path, fallback = []) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
     try {
-        const r = await fetch(API + path);
+        const r = await fetch(API + path, { signal: ctrl.signal });
+        clearTimeout(timer);
         if (r.status === 429) { console.warn('Rate limited:', path); return fallback; }
         if (!r.ok) throw new Error(r.status);
         return r.json();
     } catch (e) {
-        console.warn('Fetch failed:', path, e.message);
+        clearTimeout(timer);
+        if (e.name !== 'AbortError') console.warn('Fetch failed:', path, e.message);
         return fallback;
     }
 }
@@ -48,6 +54,36 @@ async function fetchLaps(key) {
         });
     }
     return cachedLaps;
+}
+
+// ── Stints cache (TTL) ─────────────────────────────────────────────────────
+
+let cachedStints = [];
+let stintsKey = null;
+let stintsTs  = 0;
+const STINTS_TTL = 45_000;
+
+async function fetchStints(key) {
+    if (key !== stintsKey) { cachedStints = []; stintsKey = key; stintsTs = 0; }
+    if (cachedStints.length && Date.now() - stintsTs < STINTS_TTL) return cachedStints;
+    const fresh = await get(`/stints?session_key=${key}`);
+    if (fresh.length) { cachedStints = fresh; stintsTs = Date.now(); }
+    return cachedStints;
+}
+
+// ── Pits cache (TTL) ───────────────────────────────────────────────────────
+
+let cachedPits = [];
+let pitsKey = null;
+let pitsTs  = 0;
+const PITS_TTL = 45_000;
+
+async function fetchPits(key) {
+    if (key !== pitsKey) { cachedPits = []; pitsKey = key; pitsTs = 0; }
+    if (cachedPits.length && Date.now() - pitsTs < PITS_TTL) return cachedPits;
+    const fresh = await get(`/pit?session_key=${key}`);
+    if (fresh.length) { cachedPits = fresh; pitsTs = Date.now(); }
+    return cachedPits;
 }
 
 // ── Sector color logic ─────────────────────────────────────────────────────
@@ -387,6 +423,8 @@ async function refresh() {
     isRefreshing = true;
     dot('loading');
 
+    let phase1Data = null;
+
     try {
         // Session init
         if (!sessionKey) {
@@ -409,31 +447,39 @@ async function refresh() {
         ]);
 
         const phase1 = processData(
-            { drivers, positions, intervals, laps: cachedLaps, stints: [], pits: [], rc, weather },
+            { drivers, positions, intervals, laps: cachedLaps, stints: cachedStints, pits: cachedPits, rc, weather },
             sessionData
         );
         applyRender(phase1);
         dot('ok');
-
-        // Phase 2 — heavy: laps (sector colors, best times), stints, pits
-        const [laps, stints, pits] = await Promise.all([
-            fetchLaps(sessionKey),
-            get(`/stints?session_key=${sessionKey}`),
-            get(`/pit?session_key=${sessionKey}`)
-        ]);
-
-        const phase2 = processData(
-            { drivers, positions, intervals, laps, stints, pits, rc, weather },
-            sessionData
-        );
-        applyRender(phase2);
+        phase1Data = { drivers, positions, intervals, rc, weather };
 
     } catch (err) {
         console.error(err);
         document.getElementById('last-update-label').textContent = 'Ошибка: ' + err.message;
         dot('error');
     } finally {
+        // Release lock before Phase 2 so the next 12s tick isn't blocked
         isRefreshing = false;
+    }
+
+    // Phase 2 — heavy: laps (sector colors, best times), stints, pits
+    // Runs independently — a slow laps response won't freeze future refresh cycles
+    if (!phase1Data) return;
+    try {
+        const [laps, stints, pits] = await Promise.all([
+            fetchLaps(sessionKey),
+            fetchStints(sessionKey),
+            fetchPits(sessionKey)
+        ]);
+
+        const phase2 = processData(
+            { ...phase1Data, laps, stints, pits },
+            sessionData
+        );
+        applyRender(phase2);
+    } catch (err) {
+        console.warn('Phase 2 failed:', err.message);
     }
 }
 
@@ -442,5 +488,5 @@ async function refresh() {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('refresh-btn').addEventListener('click', refresh);
     refresh();
-    setInterval(refresh, 30_000);
+    setInterval(refresh, 12_000);
 });
